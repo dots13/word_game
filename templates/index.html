@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Learning Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4; /* General background color */
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            background-color: #e0e0e0; /* Background color for tabs */
+            padding: 10px; /* Add some padding around the tabs */
+            border-radius: 8px; /* Optional: rounded corners */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional shadow */
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid lightgray;
+            background-color: #d0d0d0; /* Background color for individual tabs */
+            border-radius: 5px; /* Optional: rounded corners for tabs */
+        }
+        .tab.active {
+            background-color: #b0b0b0; /* Active tab background color */
+        }
+        .content {
+            display: none;
+            margin-top: 20px;
+            background-color: #ffffff; /* Background color for game field */
+            padding: 20px; /* Add some padding inside the content area */
+            border-radius: 8px; /* Optional: rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
+            width: 100%;
+            max-width: 800px; /* Ensure content area does not exceed screen width */
+            box-sizing: border-box;
+        }
+        .content.active {
+            display: block;
+        }
+        .card { width: 120px; height: 120px; display: inline-block; margin: 5px; background-color: lightgray; text-align: center; line-height: 100px; font-size: 18px; cursor: pointer; }
+        .card.selected { background-color: lightyellow; }
+        .card.match { background-color: lightgreen; }
+        .card.nomatch { background-color: red; }
+        #game-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; justify-items: center; }
+        .option { padding: 10px 20px; margin: 10px; background-color: lightgray; cursor: pointer; border-radius: 5px; }
+        .option.correct { background-color: lightgreen; }
+        .option.incorrect { background-color: red; }
+        .hidden { display: none; }
+        #quiz-tab, #de-het-tab {
+            width: 400px; /* Fixed width */
+            max-width: 100%; /* Ensure it doesn't exceed the screen width on small devices */
+            margin: 0 auto; /* Center the content horizontally */
+            margin-top: 18px;
+            padding: 20px; /* Optional: Add padding inside the quiz area */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add shadow effect */
+            background-color: #ffffff; /* Background color for quiz area */
+        }
+        #button-container {
+            position: relative;
+            margin-top: 18px;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        #lesson-select {
+            padding: 5px; /* Adjust the padding as needed */
+            margin-top: 20px; /* Adjust spacing from other elements if needed */
+            font-size: 16px; /* Adjust font size if necessary */
+            border-radius: 4px; /* Optional: add rounded corners */
+            border: 1px solid lightgray; /* Optional: add border */
+        }
+        #start-game-btn {
+            padding: 10px 20px;
+            background-color: lightgray;
+            cursor: pointer;
+            border-radius: 5px; }
+
+        #question, #question_de_het {
+            text-align: center;
+            font-size: 18;
+            margin-bottom: 20px;
+        }
+        #options {
+            text-align: center;
+        }
+        #quiz-mode {
+            text-align: center; /* Center-align all child elements */
+        }
+        .option {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        #toggle-language-btn {
+            margin-top: 20px; /* Add spacing from the options */
+            padding: 10px 20px; /* Add padding for better button appearance */
+            background-color: lightgray; /* Background color */
+            border: none; /* Remove default border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+        }
+
+        #toggle-language-btn:hover {
+            background-color: darkgray; /* Change color on hover */
+        }
+        #de-het-tab {
+            padding: 20px;
+            background-color: #FFFFFF; /* Adjust color as needed */
+        }
+        /* Word list tab*/
+        #word-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #word-table th, #word-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #word-table th {
+            background-color: #f4f4f4;
+        }
+        #wordlist-tab #lesson-select {
+            display: none;
+        }
+        .card {
+            width: 120px;
+            height: 120px;
+            display: inline-block;
+            margin: 5px;
+            background-color: lightgray;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card-text-container {
+            width: 90%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 5%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-text {
+            word-wrap: break-word;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .dropdown-and-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            padding-left: 20px;
+        }
+        #export-button {
+            padding: 5px 15px;
+            background-color: lightgray;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Language Learning Game</h1>
+
+    <div class="tab-container">
+        <div class="tab active" onclick="showTab('quiz-tab')">Quiz Game</div>
+        <div class="tab" onclick="showTab('match-tab')">Match Card Game</div>
+        <div class="tab" onclick="showTab('de-het-tab')">de/het Game</div>
+        <div class="tab" onclick="showTab('wordlist-tab')">Word List</div>
+    </div>
+
+    <select id="lesson-select">
+        <!-- Options will be populated by JavaScript -->
+    </select>
+
+    <div id="button-container">
+        <button id="start-game-btn" onclick="startOrRestartGame()">Start Game</button>
+    </div>
+
+    <div id="quiz-tab" class="content active">
+        <div id="quiz-mode">
+            <div id="question"></div>
+            <div id="options"></div>
+            <button id="toggle-direction-btn" onclick="toggleTranslationDirection()">English <-> Dutch</button>
+        </div>
+    </div>
+
+    <div id="match-tab" class="content">
+        <div id="match-mode">
+            <div id="game-board"></div>
+        </div>
+    </div>
+
+    <div id="de-het-tab" class="content">
+        <div id="de-het-mode">
+            <div id="question_de_het"></div>
+            <div id="options_de_het"></div>
+        </div>
+    </div>
+
+    <div id="wordlist-tab" class="content">
+        <h2>Word List</h2>
+        <div>
+            <label for="lesson-select-all">Select Lesson:</label>
+            <select id="lesson-select-all" onchange="loadWords()">
+                <!-- Options populated by Flask -->
+                {% for lesson in lessons %}
+                <option value="{{ lesson }}">{{ lesson }}</option>
+                {% endfor %}
+            </select>
+            <button id="export-button" onclick="exportToExcel()">Export</button>
+        </div>
+        <div id="word-table-container">
+            <table id="word-table">
+                <thead>
+                    <tr>
+                        <th>Dutch</th>
+                        <th>English</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+         function exportToExcel() {
+            const table = document.getElementById('word-table');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, "word_list.xlsx");
+        }
+
+        function populateLessons() {
+            fetch('/get_lessons')
+                .then(response => response.json())
+                .then(data => {
+                    const lessons = data.lessons;
+                    const lessonSelect = document.getElementById('lesson-select-all');
+
+                    // Clear existing options
+                    lessonSelect.innerHTML = '';
+
+                    lessons.forEach(lesson => {
+                        const option = document.createElement('option');
+                        option.value = lesson; // Set the value as integer
+                        option.textContent = `Lesson ${lesson}`; // Display the lesson
+                        lessonSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching lessons:', error));
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', populateLessons);
+
+        let lessonSelect;
+        document.addEventListener('DOMContentLoaded', function () {
+            lessonSelect = document.getElementById('lesson-select');
+
+            if (!lessonSelect) {
+                console.error('Element with id "lesson-select" not found.');
+                return;
+            }
+
+            fetch('/get_lessons')
+                .then(response => response.json())
+                .then(data => {
+                    const lessons = data.lessons;
+
+                    if (!Array.isArray(lessons)) {
+                        console.error('Lessons data is not an array.');
+                        return;
+                    }
+
+                    lessons.forEach(lesson => {
+                        const option = document.createElement('option');
+                        const lessonValue = parseInt(lesson, 10); // Convert lesson to integer
+                        option.value = lessonValue;
+                        option.textContent = `Lesson ${lessonValue}`;
+                        lessonSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching lessons:', error));
+
+            lessonSelect.addEventListener('change', function () {
+                const selectedLesson = parseInt(lessonSelect.value, 10);
+                console.log('Selected lesson:', selectedLesson);
+            });
+        });
+
+        let selectedLesson;
+        let quizWords;
+        let currentWordIndex = 0;
+        let gameStarted = false;
+        let gameMode = '';
+
+        function showTab(tabId) {
+            resetButton();
+
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            const buttonContainer = document.getElementById('button-container');
+            const lessonSelect = document.getElementById('lesson-select');
+            if (tabId === 'wordlist-tab') {
+                buttonContainer.style.display = 'none'; // Hide button in "Word List" tab
+                lessonSelect.style.display = 'none'; // Hide lesson select in "Word List" tab
+            } else {
+                buttonContainer.style.display = 'block'; // Show button in other tabs
+                lessonSelect.style.display = 'block'; // Show lesson select in other tabs
+                updateButtonText(); // Update button text based on the game state
+            }
+        }
+
+        function resetButton() {
+            const startGameBtn = document.getElementById('start-game-btn');
+            startGameBtn.textContent = 'Start Game';
+            gameStarted = false;
+            gameMode = '';
+        }
+
+        function startOrRestartGame() {
+            if (!gameStarted) {
+                if (document.getElementById('quiz-tab').classList.contains('active')) {
+                    gameMode = 'quiz';
+                    startQuiz();
+                } else if (document.getElementById('match-tab').classList.contains('active')) {
+                    gameMode = 'match';
+                    startMatch();
+                } else if (document.getElementById('de-het-tab').classList.contains('active')) {
+                    gameMode = 'de_het';
+                    startDeHet();
+                }
+            } else {
+                if (gameMode === 'quiz') {
+                    startQuiz(); // Restart Quiz
+                } else if (gameMode === 'match') {
+                    startMatch(); // Restart Match
+                } else if (gameMode === 'de_het') {
+                    startDeHet(); // Restart de/het Game
+                }
+            }
+            gameStarted = true;
+        }
+
+        function startQuiz() {
+            selectedLesson = lessonSelect.value;
+            fetch(`/get_words?lesson=${selectedLesson}&mode=quiz`)
+                .then(response => response.json())
+                .then(data => {
+                    quizWords = data;
+                    currentWordIndex = 0;
+                    document.getElementById('quiz-mode').classList.remove('hidden');
+                    document.getElementById('match-mode').classList.add('hidden');
+                    showQuestion();
+                    document.getElementById('start-game-btn').textContent = 'Restart Quiz';
+                });
+        }
+
+        let translationDirection = 'DutchToEnglish'; // Default direction
+
+        function toggleTranslationDirection() {
+            translationDirection = (translationDirection === 'DutchToEnglish') ? 'EnglishToDutch' : 'DutchToEnglish';
+            showQuestion(); // Refresh the question with the new direction
+        }
+
+        function showQuestion() {
+            const word = quizWords[currentWordIndex];
+            const questionText = translationDirection === 'DutchToEnglish' ? word.Dutch : word.English;
+            const correctAnswer = translationDirection === 'DutchToEnglish' ? word.English : word.Dutch;
+
+            document.getElementById('question').textContent = questionText;
+            const options = document.getElementById('options');
+            options.innerHTML = '';
+
+            const shuffledWords = [...quizWords].sort(() => Math.random() - 0.5);
+            const optionWords = shuffledWords.slice(0, 3).concat(word).sort(() => Math.random() - 0.5);
+
+            optionWords.forEach(optionWord => {
+                const optionText = translationDirection === 'DutchToEnglish' ? optionWord.English : optionWord.Dutch;
+                const option = document.createElement('div');
+                option.className = 'option';
+                option.textContent = optionText;
+
+
+
+                option.addEventListener('click', () => checkAnswer(option, correctAnswer));
+                options.appendChild(option);
+            });
+        }
+
+        function checkAnswer(option, correctAnswer) {
+            if (option.textContent === correctAnswer) {
+                option.classList.add('correct');
+                setTimeout(() => {
+                    currentWordIndex++;
+                    if (currentWordIndex < quizWords.length) {
+                        showQuestion();
+                    } else {
+                        alert('You completed the quiz!');
+                        resetButton();
+                        document.getElementById('quiz-mode').classList.add('hidden');
+                        document.getElementById('start-quiz-btn').textContent = 'Start Quiz';
+                    }
+                }, 1000);
+            } else {
+                option.classList.add('incorrect');
+                setTimeout(() => option.classList.remove('incorrect'), 700);
+            }
+        }
+
+        function startMatch() {
+            selectedLesson = lessonSelect.value;
+            matchedPairs = 0; // Reset matched pairs
+            selectedCards = []; // Reset selected cards
+            fetch(`/get_words?lesson=${selectedLesson}&mode=match`)
+                .then(response => response.json())
+                .then(data => {
+                    const gameBoard = document.getElementById('game-board');
+                    gameBoard.innerHTML = '';
+                    data.forEach((word, index) => {
+                        const card = createCardElement(word, index);
+                        gameBoard.appendChild(card);
+                    });
+                    document.getElementById('quiz-mode').classList.add('hidden');
+                    document.getElementById('match-mode').classList.remove('hidden');
+                    document.getElementById('start-game-btn').textContent = 'Restart Match Game';
+                });
+        }
+
+        function createCardElement(word, index) {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const textContainer = document.createElement('div');
+            textContainer.className = 'card-text-container';
+
+            const textElement = document.createElement('div');
+            textElement.className = 'card-text';
+            textElement.textContent = word.word.split(/[\,]/)[0];
+            textContainer.appendChild(textElement);
+            card.appendChild(textContainer);
+
+            adjustFontSize(textElement, textContainer);
+
+            card.dataset.index = index;
+            card.dataset.value = word.word;
+            card.dataset.lang = word.lang;
+            card.dataset.translation = word.translation;
+            card.addEventListener('click', () => selectCard(card));
+
+            return card;
+        }
+
+        let selectedCards = [];
+        let matchedPairs = 0;
+
+        function selectCard(card) {
+            // Check if the card is already selected
+            if (selectedCards.includes(card)) {
+                card.classList.remove('selected');
+                selectedCards = selectedCards.filter(selectedCard => selectedCard !== card);
+            } else {
+                // Proceed only if less than 2 cards are selected and the card is not matched
+                if (selectedCards.length < 2 && !card.classList.contains('selected') && !card.classList.contains('match')) {
+                    card.classList.add('selected');
+                    selectedCards.push(card);
+
+                    if (selectedCards.length === 2) {
+                        checkMatch();
+                    }
+                }
+            }
+        }
+
+        function adjustFontSize(textElement, textContainer) {
+            const longWordThreshold = 12;
+            const defaultFontSize = 18;
+            const reducedFontSize = 14;
+
+            textElement.style.fontSize = defaultFontSize + 'px';
+
+            const maxHeight = textContainer.clientHeight;
+            const maxWidth = textContainer.clientWidth;
+
+            function isLongWord(word) {
+                return word.length >= longWordThreshold;
+            }
+
+            function fitsWithinContainer() {
+                return textElement.scrollHeight <= maxHeight && textElement.scrollWidth <= maxWidth;
+            }
+
+            const words = textElement.textContent.split(/\s+/);
+            const hasLongWord = words.some(word => isLongWord(word));
+
+            if (hasLongWord) {
+                textElement.style.fontSize = reducedFontSize + 'px';
+            }
+            while (!fitsWithinContainer() && parseInt(textElement.style.fontSize) > 10) {
+                let fontSize = parseInt(textElement.style.fontSize) - 1;
+                textElement.style.fontSize = fontSize + 'px';
+            }
+
+        }
+
+        function checkMatch() {
+            const [card1, card2] = selectedCards;
+            if (card1.dataset.value === card2.dataset.translation) {
+                card1.classList.add('match');
+                card2.classList.add('match');
+                matchedPairs++;
+                if (matchedPairs === document.querySelectorAll('.card').length / 2) {
+                    alert('You matched all pairs!');
+                    resetGame();
+                }
+            } else {
+                card1.classList.add('nomatch');
+                card2.classList.add('nomatch');
+                setTimeout(() => {
+                    card1.classList.remove('selected', 'nomatch');
+                    card2.classList.remove('selected', 'nomatch');
+                }, 1000);
+            }
+            selectedCards = [];
+        }
+
+        function resetGame() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('match', 'nomatch');
+            });
+            matchedPairs = 0;
+            selectedCards = [];
+            gameStarted = false;
+            resetButton();
+        }
+
+        function showWordList() {
+            selectedLesson = lessonSelect.value;
+            fetch(`/get_words?lesson=${selectedLesson}&mode=list`)
+                .then(response => response.json())
+                .then(data => {
+                    const wordList = document.getElementById('word-list');
+                    wordList.innerHTML = '';
+                    data.forEach(word => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${word.Dutch} - ${word.English}`;
+                        wordList.appendChild(listItem);
+                    });
+                });
+        }
+        function startDeHet() {
+            selectedLesson = lessonSelect.value;
+            fetch(`/get_words?lesson=${selectedLesson}&mode=de_het`)
+                .then(response => response.json())
+                .then(data => {
+                    const shuffledWords = data.sort(() => Math.random() - 0.5);
+                    quizWords = shuffledWords;
+                    currentWordIndex = 0;
+                    document.getElementById('de-het-mode').classList.remove('hidden');
+                    document.getElementById('quiz-mode').classList.add('hidden');
+                    document.getElementById('match-mode').classList.add('hidden');
+                    showQuestionDeHet();
+                    document.getElementById('start-game-btn').textContent = 'Restart de/het Game';
+                });
+        }
+
+        function showQuestionDeHet() {
+            const word = quizWords[currentWordIndex];
+            const questionText = word.word;
+            const correctAnswer = word.article;
+
+            document.getElementById('question_de_het').textContent = questionText;
+            const options = document.getElementById('options_de_het');
+            options.innerHTML = '';
+
+            const optionWords = ['de', 'het']; // Options for de/het
+            optionWords.forEach(optionWord => {
+                const option = document.createElement('div');
+                option.className = 'option';
+                option.textContent = optionWord;
+                option.addEventListener('click', () => checkAnswerDeHet(option, correctAnswer));
+                options.appendChild(option);
+            });
+        }
+
+        function checkAnswerDeHet(option, correctAnswer) {
+            if (option.textContent === correctAnswer) {
+                option.classList.add('correct');
+                setTimeout(() => {
+                    currentWordIndex++;
+                    if (currentWordIndex < quizWords.length) {
+                        showQuestionDeHet();
+                    } else {
+                        alert('You completed the de/het game!');
+                        document.getElementById('de-het-mode').classList.add('hidden');
+                        document.getElementById('start-game-btn').textContent = 'Start de/het Game';
+                        resetButton(); // Reset the button text
+                    }
+                }, 500);
+            } else {
+                option.classList.add('incorrect');
+                setTimeout(() => option.classList.remove('incorrect'), 500);
+            }
+        }
+
+
+
+        function loadWords() {
+            const lesson = document.getElementById('lesson-select-all').value;
+            const url = `/get_words?lesson=${lesson}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#word-table tbody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+
+                    // Populate table with data
+                    data.forEach(word => {
+                        const row = document.createElement('tr');
+                        const dutchCell = document.createElement('td');
+                        dutchCell.textContent = word['Dutch'] || ''; // Handle cases where 'Dutch' might be undefined
+                        const englishCell = document.createElement('td');
+                        englishCell.textContent = word['English'] || ''; // Handle cases where 'English' might be undefined
+
+                        row.appendChild(dutchCell);
+                        row.appendChild(englishCell);
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading words:', error));
+        }
+
+
+
+        function exportToExcel() {
+            const table = document.getElementById('word-table');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, "word_list.xlsx");
+        }
+
+
+    </script>
+</body>
+</html>
+
